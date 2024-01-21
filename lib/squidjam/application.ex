@@ -11,8 +11,7 @@ defmodule Squidjam.Application do
       SquidjamWeb.Telemetry,
       Squidjam.Repo,
       {Ecto.Migrator,
-        repos: Application.fetch_env!(:squidjam, :ecto_repos),
-        skip: skip_migrations?()},
+       repos: Application.fetch_env!(:squidjam, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:squidjam, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Squidjam.PubSub},
       # Start the Finch HTTP client for sending emails
@@ -20,7 +19,9 @@ defmodule Squidjam.Application do
       # Start a worker by calling: Squidjam.Worker.start_link(arg)
       # {Squidjam.Worker, arg},
       # Start to serve requests, typically the last entry
-      SquidjamWeb.Endpoint
+      SquidjamWeb.Endpoint,
+      Squidjam.TictactoeSupervisor,
+      {Registry, keys: :unique, name: Squidjam.TictactoeRegistry}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

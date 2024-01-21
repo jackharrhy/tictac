@@ -50,7 +50,8 @@ defmodule Squidjam.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:mnemonic_slugs, "~> 0.0.3"}
     ]
   end
 
