@@ -2,6 +2,9 @@
 
 {xmerl, _} = raw_svg |> :erlang.binary_to_list() |> :xmerl_scan.string()
 
-xpath_query = "/descendant::circle"
+xpath_query = "//circle"
 
-IO.inspect(:xmerl_xpath.string(:erlang.binary_to_list(xpath_query), xmerl))
+for result <-
+      :xmerl_xpath.string(:erlang.binary_to_list(xpath_query), xmerl) do
+  IO.inspect(result)
+end

@@ -129,35 +129,39 @@ defmodule Squidjam.Tictactoe do
     end
   end
 
-  def add_player(game, player_name) do
+  def add_player(game, player_id, player_name) do
     case length(game.players) do
       0 ->
-        player = TictactoePlayer.new(player_name)
+        player = TictactoePlayer.new(player_id, player_name)
         {:ok, player, Map.update!(game, :players, &[player | &1])}
 
       1 ->
         existing_player = hd(game.players)
 
-        if existing_player.name == player_name do
-          {:error, :name_taken}
+        if existing_player.id == player_id do
+          {:ok, existing_player, game}
         else
-          existing_mark = existing_player.mark
+          if existing_player.name == player_name do
+            {:error, :name_taken}
+          else
+            existing_mark = existing_player.mark
 
-          mark =
-            if existing_mark == "X" do
-              "O"
-            else
-              "X"
-            end
+            mark =
+              if existing_mark == "X" do
+                "O"
+              else
+                "X"
+              end
 
-          player = TictactoePlayer.new(player_name, mark)
+            player = TictactoePlayer.new(player_id, player_name, mark)
 
-          game =
-            game
-            |> Map.update!(:players, &[player | &1])
-            |> start_game()
+            game =
+              game
+              |> Map.update!(:players, &[player | &1])
+              |> start_game()
 
-          {:ok, player, game}
+            {:ok, player, game}
+          end
         end
 
       _ ->
@@ -165,8 +169,8 @@ defmodule Squidjam.Tictactoe do
     end
   end
 
-  def cell_interact(game, player_name, row_index, cell_index) do
-    with {:ok, player} <- get_player_by_name(game, player_name),
+  def cell_interact(game, player_id, row_index, cell_index) do
+    with {:ok, player} <- get_player_by_id(game, player_id),
          :ok <- game_active(game),
          :ok <- it_is_my_turn(game, player),
          :ok <- cell_is_empty(game, row_index, cell_index) do
@@ -193,8 +197,9 @@ defmodule Squidjam.Tictactoe do
     mark_to_player(game, game.turn)
   end
 
-  def get_player_by_name(game, player_name) do
-    player = Enum.find(game.players, fn player -> player.name == player_name end)
+  def get_player_by_id(game, player_id) do
+    IO.inspect(player_id)
+    player = Enum.find(game.players, fn player -> player.id == player_id end)
 
     if player do
       {:ok, player}

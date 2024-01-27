@@ -5,15 +5,15 @@ defmodule Squidjam.TictactoeServer do
 
   alias Squidjam.Tictactoe
 
-  def add_player(slug, player_name) do
-    with {:ok, player, game} <- call_by_slug(slug, {:add_player, player_name}) do
+  def add_player(slug, player_id, player_name) do
+    with {:ok, player, game} <- call_by_slug(slug, {:add_player, player_id, player_name}) do
       broadcast_game_updated!(slug, game)
       {:ok, player}
     end
   end
 
-  def cell_interact(slug, player_name, row_index, cell_index) do
-    with {:ok, game} <- call_by_slug(slug, {:cell_interact, player_name, row_index, cell_index}) do
+  def cell_interact(slug, player_id, row_index, cell_index) do
+    with {:ok, game} <- call_by_slug(slug, {:cell_interact, player_id, row_index, cell_index}) do
       broadcast_game_updated!(slug, game)
       {:ok, game}
     end
@@ -23,8 +23,8 @@ defmodule Squidjam.TictactoeServer do
     call_by_slug(slug, :get_game)
   end
 
-  def get_player_by_name(slug, player_name) do
-    call_by_slug(slug, {:get_player_by_name, player_name})
+  def get_player_by_id(slug, player_id) do
+    call_by_slug(slug, {:get_player_by_id, player_id})
   end
 
   defp call_by_slug(slug, command) do
@@ -58,8 +58,8 @@ defmodule Squidjam.TictactoeServer do
   end
 
   @impl GenServer
-  def handle_call({:add_player, player_name}, _from, state) do
-    case Tictactoe.add_player(state.game, player_name) do
+  def handle_call({:add_player, player_id, player_name}, _from, state) do
+    case Tictactoe.add_player(state.game, player_id, player_name) do
       {:ok, player, game} ->
         {:reply, {:ok, player, game}, %{state | game: game}}
 
@@ -69,8 +69,8 @@ defmodule Squidjam.TictactoeServer do
   end
 
   @impl GenServer
-  def handle_call({:cell_interact, player_name, row_index, cell_index}, _from, state) do
-    case Tictactoe.cell_interact(state.game, player_name, row_index, cell_index) do
+  def handle_call({:cell_interact, player_id, row_index, cell_index}, _from, state) do
+    case Tictactoe.cell_interact(state.game, player_id, row_index, cell_index) do
       {:ok, game} ->
         {:reply, {:ok, game}, %{state | game: game}}
 
@@ -85,8 +85,8 @@ defmodule Squidjam.TictactoeServer do
   end
 
   @impl GenServer
-  def handle_call({:get_player_by_name, player_name}, _from, state) do
-    {:reply, Tictactoe.get_player_by_name(state.game, player_name), state}
+  def handle_call({:get_player_by_id, player_id}, _from, state) do
+    {:reply, Tictactoe.get_player_by_id(state.game, player_id), state}
   end
 
   defp broadcast_game_updated!(slug, game) do

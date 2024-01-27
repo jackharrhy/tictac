@@ -18,6 +18,8 @@ defmodule SquidjamWeb.Router do
   scope "/", SquidjamWeb do
     pipe_through :browser
 
+    get "/setup", EnsureSessionController, :index
+
     live_session :default do
       live "/", LobbyLive
       live "/tictactoe/:slug", TictactoeLive
@@ -26,8 +28,6 @@ defmodule SquidjamWeb.Router do
 
   scope "/api", SquidjamWeb do
     pipe_through :api
-
-    put "/cookies", CookiesController, :put
   end
 
   # Other scopes may use custom stacks.

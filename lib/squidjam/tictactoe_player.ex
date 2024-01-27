@@ -1,5 +1,6 @@
 defmodule Squidjam.TictactoePlayer do
   defstruct [
+    :id,
     :name,
     :mark
   ]
@@ -13,19 +14,22 @@ defmodule Squidjam.TictactoePlayer do
     @marks
   end
 
-  def new(name, mark) do
+  def new(id, name, mark) do
     struct!(__MODULE__, %{
+      id: id,
       name: name,
       mark: mark
     })
   end
 
-  def new(name) do
+  def new(id, name) do
     random_mark = Enum.random(@marks)
+    new(id, name, random_mark)
+  end
+end
 
-    struct!(__MODULE__, %{
-      name: name,
-      mark: random_mark
-    })
+defimpl String.Chars, for: Squidjam.TictactoePlayer do
+  def to_string(player) do
+    "#{player.name} (#{player.mark})"
   end
 end

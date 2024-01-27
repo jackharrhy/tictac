@@ -45,7 +45,11 @@ defmodule SquidjamWeb.LobbyLive do
     end
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"session_id" => _session_id}, socket) do
     {:ok, assign(socket, slug: "", error: nil)}
+  end
+
+  def mount(_params, _session, socket) do
+    {:ok, redirect(socket, to: "/setup?return_to=/")}
   end
 end

@@ -25,14 +25,28 @@ defmodule SquidjamWeb.TictactoeLive do
         </button>
       <% end %>
 
-      <%= case @game.state do %>
-        <% :setup -> %>
-          waiting for another player to join...
-        <% :active -> %>
-          game in progress
-        <% :finished -> %>
-          finished, result: <%= @game.result %>
+      <%= if @game.state != :setup do %>
+        <p>
+          <%= Enum.at(@game.players, 0) |> to_string() %> vs. <%= Enum.at(@game.players, 1)
+          |> to_string() %>
+        </p>
       <% end %>
+
+      <p>
+        <%= case @game.state do %>
+          <% :setup -> %>
+            waiting for another player to join...
+          <% :active -> %>
+            <%= @game.turn %> to move
+          <% :finished -> %>
+            <%= case @game.result do %>
+              <% :tie -> %>
+                draw
+              <% {:winner, mark} -> %>
+                <%= mark %> won
+            <% end %>
+        <% end %>
+      </p>
 
       <div class="p-4">
         <%= for {row, row_index} <- Enum.with_index(@game.board) do %>
@@ -55,9 +69,9 @@ defmodule SquidjamWeb.TictactoeLive do
   end
 
   def handle_event("join-game", _, socket) do
-    %{game: game, player: nil} = socket.assigns
+    %{player: nil} = socket.assigns
 
-    {:noreply, add_self_to_game(socket, game.slug, game)}
+    {:noreply, add_self_to_game(socket)}
   end
 
   def handle_event("cell-click", %{"row-index" => row_index, "cell-index" => cell_index}, socket) do
@@ -70,7 +84,7 @@ defmodule SquidjamWeb.TictactoeLive do
       {:noreply, put_temporary_flash(socket, :error, "not in the game")}
     else
       socket =
-        case TictactoeServer.cell_interact(game.slug, player.name, row_index, cell_index) do
+        case TictactoeServer.cell_interact(game.slug, player.id, row_index, cell_index) do
           {:ok, _game} ->
             socket
 
@@ -84,22 +98,24 @@ defmodule SquidjamWeb.TictactoeLive do
     end
   end
 
-  def add_self_to_game(socket, slug, game) do
+  def add_self_to_game(socket) do
+    %{game: game, session_id: session_id} = socket.assigns
     player_name = MnemonicSlugs.generate_slug()
 
-    case TictactoeServer.add_player(slug, player_name) do
+    case TictactoeServer.add_player(game.slug, session_id, player_name) do
       {:ok, player} ->
         socket
-        |> assign(game: game, player: player)
+        |> assign(player: player)
 
       {:error, :game_full} ->
         socket
         |> put_temporary_flash(:error, "game full")
-        |> assign(game: game, player: nil)
     end
   end
 
-  def mount(%{"slug" => slug} = params, _session, socket) do
+  def mount(%{"slug" => slug} = params, %{"session_id" => session_id}, socket) do
+    socket = assign(socket, session_id: session_id)
+
     auto_join = Map.has_key?(params, "join")
 
     unless TictactoeServer.game_exists?(slug) do
@@ -108,20 +124,36 @@ defmodule SquidjamWeb.TictactoeLive do
 
     {:ok, game} = TictactoeServer.get_game(slug)
 
+    socket = assign(socket, game: game)
+
+    socket =
+      case TictactoeServer.get_player_by_id(slug, session_id) do
+        {:ok, player} ->
+          assign(socket, player: player)
+
+        {:error, weird} ->
+          IO.inspect(weird)
+          assign(socket, player: nil)
+      end
+
     socket =
       if connected?(socket) do
         :ok = Phoenix.PubSub.subscribe(Squidjam.PubSub, slug)
 
-        if length(game.players) == 0 || auto_join do
-          add_self_to_game(socket, slug, game)
+        if !is_nil(socket.assigns.player) && (length(game.players) == 0 || auto_join) do
+          add_self_to_game(socket)
         else
-          assign(socket, game: game, player: nil)
+          socket
         end
       else
-        assign(socket, game: game, player: nil)
+        socket
       end
 
     {:ok, socket}
+  end
+
+  def mount(%{"slug" => slug}, _session, socket) do
+    {:ok, redirect(socket, to: "/setup?return_to=/tictactoe/#{slug}")}
   end
 
   defp put_temporary_flash(socket, level, message) do
