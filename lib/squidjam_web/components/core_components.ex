@@ -147,8 +147,8 @@ defmodule SquidjamWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
-      <.flash kind={:info} title="Success!" flash={@flash} />
-      <.flash kind={:error} title="Error!" flash={@flash} />
+      <.flash kind={:info} title="success" flash={@flash} />
+      <.flash kind={:error} title="error" flash={@flash} />
       <.flash
         id="client-error"
         kind={:error}
@@ -157,7 +157,7 @@ defmodule SquidjamWeb.CoreComponents do
         phx-connected={hide("#client-error")}
         hidden
       >
-        Attempting to reconnect <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
+        attempting to reconnect <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
 
       <.flash
@@ -168,7 +168,7 @@ defmodule SquidjamWeb.CoreComponents do
         phx-connected={hide("#server-error")}
         hidden
       >
-        Hang in there while we get back on track
+        hang in there while we get back on track
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
     </div>
@@ -230,8 +230,8 @@ defmodule SquidjamWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "phx-submit-loading:opacity-75 hover:bg-gray-200 py-2 px-3",
+        "border border-1 border-black",
         @class
       ]}
       {@rest}
@@ -376,9 +376,9 @@ defmodule SquidjamWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
+          "mt-2 block text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
+          "phx-no-feedback:border-black phx-no-feedback:focus:border-zinc-600",
+          @errors == [] && "border-black focus:border-zinc-600",
           @errors != [] && "border-rose-400 focus:border-rose-400"
         ]}
         {@rest}

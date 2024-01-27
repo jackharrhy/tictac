@@ -52,7 +52,8 @@ defmodule SquidjamWeb do
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {SquidjamWeb.Layouts, :app}
+        layout: {SquidjamWeb.Layouts, :app},
+        container: {:div, class: "h-full flex flex-col"}
 
       unquote(html_helpers())
     end

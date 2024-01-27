@@ -47,6 +47,10 @@ defmodule Squidjam.TictactoeServer do
     |> GenServer.whereis()
   end
 
+  def game_exists?(slug) do
+    game_pid(slug) != nil
+  end
+
   @impl GenServer
   def init(slug) do
     Logger.info("Creating game server with slug #{slug}")

@@ -9,8 +9,8 @@ defmodule SquidjamTest.Tictactoe do
     game = Tictactoe.new(slug)
 
     assert game.slug == slug
-    assert !game.active
-    assert game.winner == nil
+    assert game.state == :setup
+    assert game.result == nil
   end
 
   test "creates game with two players" do
@@ -19,7 +19,7 @@ defmodule SquidjamTest.Tictactoe do
     {:ok, _player, game} = Tictactoe.add_player(game, "riley")
 
     assert length(game.players) == 2
-    assert game.active
+    assert game.state == :active
     assert game.turn != nil
   end
 
@@ -55,8 +55,8 @@ defmodule SquidjamTest.Tictactoe do
       |> move(1, 1)
       |> move(0, 2)
 
-    assert game.winner == first_player.mark
-    assert !game.active
+    assert game.result == {:winner, first_player.mark}
+    assert game.state == :finished
     assert game.turn == nil
   end
 
@@ -73,7 +73,7 @@ defmodule SquidjamTest.Tictactoe do
         [nil, nil, nil]
       ])
 
-    assert Tictactoe.winner(game) == :no_winner
+    assert Tictactoe.result(game) == nil
   end
 
   test "winner check notices straight line winner" do
@@ -89,7 +89,7 @@ defmodule SquidjamTest.Tictactoe do
         [nil, nil, nil]
       ])
 
-    assert Tictactoe.winner(game) == jack.mark
+    assert Tictactoe.result(game) == {:winner, jack.mark}
 
     game =
       game
@@ -99,7 +99,7 @@ defmodule SquidjamTest.Tictactoe do
         [nil, nil, riley.mark]
       ])
 
-    assert Tictactoe.winner(game) == riley.mark
+    assert Tictactoe.result(game) == {:winner, riley.mark}
 
     game =
       game
@@ -109,7 +109,7 @@ defmodule SquidjamTest.Tictactoe do
         [nil, nil, riley.mark]
       ])
 
-    assert Tictactoe.winner(game) == jack.mark
+    assert Tictactoe.result(game) == {:winner, jack.mark}
   end
 
   test "winner check notices diagonal winner" do
@@ -125,7 +125,7 @@ defmodule SquidjamTest.Tictactoe do
         [nil, nil, jack.mark]
       ])
 
-    assert Tictactoe.winner(game) == jack.mark
+    assert Tictactoe.result(game) == {:winner, jack.mark}
 
     game =
       game
@@ -135,6 +135,6 @@ defmodule SquidjamTest.Tictactoe do
         [jack.mark, nil, nil]
       ])
 
-    assert Tictactoe.winner(game) == jack.mark
+    assert Tictactoe.result(game) == {:winner, jack.mark}
   end
 end

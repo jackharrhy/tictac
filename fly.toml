@@ -1,0 +1,38 @@
+# fly.toml app configuration file generated for squidjam on 2024-01-21T21:11:53-03:30
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "squidjam"
+primary_region = "yul"
+kill_signal = "SIGTERM"
+
+[build]
+
+[deploy]
+
+[env]
+PHX_HOST = "squidjam.fly.dev"
+PORT = "8080"
+DATABASE_PATH = "/mnt/data/squidjam.db"
+
+[mounts]
+source = "squidjam_data"
+destination = "/mnt/data"
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = false
+auto_start_machines = false
+min_machines_running = 1
+processes = ["app"]
+[http_service.concurrency]
+type = "connections"
+hard_limit = 10000
+soft_limit = 9000
+
+[[vm]]
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 1024

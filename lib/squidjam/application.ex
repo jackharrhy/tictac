@@ -7,6 +7,8 @@ defmodule Squidjam.Application do
 
   @impl true
   def start(_type, _args) do
+    Squidjam.Release.migrate()
+
     children = [
       SquidjamWeb.Telemetry,
       Squidjam.Repo,

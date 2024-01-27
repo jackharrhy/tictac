@@ -26,28 +26,8 @@ let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
 
-let Hooks = {};
-Hooks.CookieListener = {
-  mounted() {
-    console.log("mounted");
-    this.handleEvent(
-      "setup-cookies",
-      async ({ path, method, token, context }) => {
-        console.log("setup-cookies", { path, method, token });
-        await fetch(path, {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-        this.pushEvent("cookies-setup", context);
-      }
-    );
-  },
-};
-
 let liveSocket = new LiveSocket("/live", Socket, {
   params: { _csrf_token: csrfToken },
-  hooks: Hooks,
 });
 
 liveSocket.enableDebug();

@@ -3,9 +3,9 @@ defmodule Squidjam.Tictactoe do
 
   defstruct chat_messages: [],
             slug: nil,
-            active: false,
+            state: :setup,
             turn: nil,
-            winner: nil,
+            result: nil,
             board: [
               [nil, nil, nil],
               [nil, nil, nil],
@@ -31,19 +31,19 @@ defmodule Squidjam.Tictactoe do
     random_mark = Enum.random(TictactoePlayer.marks())
 
     game
-    |> Map.put(:active, true)
+    |> Map.put(:state, :active)
     |> Map.put(:turn, random_mark)
   end
 
-  def end_game(game, winner) do
+  def end_game(game, result) do
     game
     |> Map.put(:turn, nil)
-    |> Map.put(:active, false)
-    |> Map.put(:winner, winner)
+    |> Map.put(:state, :finished)
+    |> Map.put(:result, result)
   end
 
   def game_active(game) do
-    if game.active do
+    if game.state == :active do
       :ok
     else
       {:error, :game_not_active}
@@ -72,21 +72,27 @@ defmodule Squidjam.Tictactoe do
     Enum.at(Enum.at(game.board, row_index), cell_index)
   end
 
-  def winner(game) do
-    board = game.board
-    board_columns = Enum.zip(board) |> Enum.map(&Tuple.to_list/1)
-    diag_1 = for i <- 0..2, do: Enum.at(Enum.at(board, i), i)
-    diag_2 = for i <- 0..2, do: Enum.at(Enum.at(board, i), 2 - i)
-    diagonals = [diag_1, diag_2]
+  def result(game) do
+    is_tie = Enum.all?(game.board, fn row -> Enum.all?(row, fn cell -> cell != nil end) end)
 
-    Enum.concat([board, board_columns, diagonals])
-    |> Enum.find(fn
-      [a, a, a] -> a
-      _ -> nil
-    end)
-    |> case do
-      nil -> :no_winner
-      winner -> Enum.at(winner, 0)
+    if is_tie do
+      :tie
+    else
+      board = game.board
+      board_columns = Enum.zip(board) |> Enum.map(&Tuple.to_list/1)
+      diag_1 = for i <- 0..2, do: Enum.at(Enum.at(board, i), i)
+      diag_2 = for i <- 0..2, do: Enum.at(Enum.at(board, i), 2 - i)
+      diagonals = [diag_1, diag_2]
+
+      Enum.concat([board, board_columns, diagonals])
+      |> Enum.find(fn
+        [a, a, a] -> a
+        _ -> nil
+      end)
+      |> case do
+        nil -> nil
+        winner -> {:winner, Enum.at(winner, 0)}
+      end
     end
   end
 
@@ -167,12 +173,12 @@ defmodule Squidjam.Tictactoe do
       game = game |> set_cell(row_index, cell_index, player.mark)
 
       game =
-        case winner(game) do
-          :no_winner ->
+        case result(game) do
+          nil ->
             game |> next_turn()
 
-          winner ->
-            game |> end_game(winner)
+          result ->
+            game |> end_game(result)
         end
 
       {:ok, game}
